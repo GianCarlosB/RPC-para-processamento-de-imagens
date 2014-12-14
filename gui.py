@@ -9,11 +9,14 @@ from PIL import ImageTk, Image
 CARROT_COLOR = '#e67e22';
 POMEGRANATE_COLOR = '#c0392b';
 CLOUDS_COLOR = '#ecf0f1';
+MIDNIGHT_BLUE = '#2c3e50';
 
 # Textos da GUI
 TXT_TITULO = '  RPC para processamento de imagens'
 TXT_BTN_CI = 'Carregar Imagem ...'
 TXT_BTN_ENVIAR = 'Enviar'
+TXT_BTN_EDITAR = 'Editar Imagem'
+TXT_BTN_DET = 'Deteccao de Face'
 TXT_BTN_OPC = 'Opcoes'
 TXT_BTN_SAIR = 'Sair'
 
@@ -28,6 +31,11 @@ img = Image.open(NO_IMG)
 # Variável para armazenar a url de resposta do servidor
 url = ''
 
+# Variáveis referente a manipulação da imagem
+width = ''
+height = ''
+effects = ''
+
 # Dados para fazer a conexão com o servidor
 ip = '127.0.0.1' # IP padrão
 porta = '6666' # porta padrão
@@ -35,6 +43,9 @@ porta = '6666' # porta padrão
 
 # Tipos de arquivos que podem ser abertos
 TIPOS = [('Image Files', ('*.jpg', '*.gif', '*.png')), ('JPEG','*.jpg'), ('GIF','*.gif'), ('PNG','*.png')]
+
+
+
 
 def center(root):
     root.update_idletasks()
@@ -89,7 +100,7 @@ def caixaBtn(root):
 	return container
 
 class Btn:
-	def __init__(self, root, caixaBotao, caixaImagem, nomeBtn, largura = 10):
+	def __init__(self, root, caixaBotao, caixaImagem, nomeBtn, largura = 10, cor = POMEGRANATE_COLOR):
 		self.root = root
 		self.caixaBotao = caixaBotao
 		self.caixaImagem = caixaImagem
@@ -98,7 +109,7 @@ class Btn:
 		self.button = Button(self.caixaBotao) 
 		self.button['text']= nomeBtn
 		self.button['foreground'] = CLOUDS_COLOR
-		self.button['background'] = POMEGRANATE_COLOR
+		self.button['background'] = cor
 		self.button['width'] = largura
 		self.button.bind('<Button>', self.trata_eventos) 
 		self.button.pack(padx=6, pady=6)
@@ -133,12 +144,19 @@ class Btn:
 			####################################################
 			####################################################
 			pass
+		elif self.button['text'] == TXT_BTN_EDITAR:
+			DialogEdit(self.root)
+			#* Manipulação da Imagem *
+		elif self.button['text'] == TXT_BTN_DET:
+			# * Detecção de Face *
+			pass
 		elif self.button['text'] == TXT_BTN_OPC:
-			Dialog(self.root)
+			DialogOpc(self.root)
 		elif self.button['text'] == TXT_BTN_SAIR:
 			self.root.destroy()
         	self.root = None
-class Dialog:
+
+class DialogOpc:
 	def __init__(self, root):
 		# Configuraçoes da janela
 		self.top = Toplevel(root)
@@ -177,6 +195,49 @@ class Dialog:
 		# Destruindo a caixa de dialogo
 		self.top.destroy()
 
+class DialogEdit:
+	def __init__(self, root):
+		# Configuraçoes da janela
+		self.top = Toplevel(root)
+		self.top.wm_title(TXT_BTN_EDITAR)
+		self.top.geometry('250x120')
+		center(self.top)
+		self.top.resizable(0,0)
+		self.top.configure(background=CARROT_COLOR, bd=5, highlightthickness=2)
+
+		# Labels
+		Label(self.top, text='Width: ', background=CARROT_COLOR,
+			foreground=CLOUDS_COLOR).grid(row=0)
+		Label(self.top, text='Height: ', background=CARROT_COLOR,
+			foreground=CLOUDS_COLOR).grid(row=1)
+		Label(self.top, text='Effects: ', background=CARROT_COLOR,
+			foreground=CLOUDS_COLOR).grid(row=2)
+
+		# Inputs
+		self.entradaWidth = Entry(self.top)
+		self.entradaHeight = Entry(self.top)
+		self.entradaEffects = Entry(self.top)
+
+		self.entradaWidth.grid(row=0, column=1, padx=2, pady=2)
+		self.entradaHeight.grid(row=1, column=1, padx=2, pady=2)
+		self.entradaEffects.grid(row=2, column=1, padx=2, pady=2)
+
+		# Botão de OK
+		self.btn = Button(self.top, text='OK', background=POMEGRANATE_COLOR,
+			foreground=CLOUDS_COLOR,command=self.ok)
+		self.btn.grid(row=3, column=1, padx=4, pady=4)
+	def ok(self):
+		# Atualizando os parâmetros para comunicação com o servidor
+		global width
+		global height
+		global effects
+		width = self.entradaWidth.get()
+		height = self.entradaHeight.get()
+		effects = self.entradaEffects.get()
+
+		# Destruindo a caixa de dialogo
+		self.top.destroy()
+
 
 
 		
@@ -185,7 +246,7 @@ if __name__ == '__main__':
 		# Configuraçoes do root
 		root = Tk()
 		root.wm_title(TXT_TITULO)
-		root.geometry('800x650')
+		root.geometry('800x740')
 		center(root)
 		root.resizable(0,0)
 		root.configure(background=CARROT_COLOR, bd=5, highlightthickness=2)
@@ -201,8 +262,9 @@ if __name__ == '__main__':
 		caixaBtn1 = caixaBtn(root)
 		caixaBtn1.pack()
 
-		# Botão de Carregar a imagem
+		# Botões inferiores (carregar imagem, enviar)
 		Btn(root, caixaBtn1, caixaImagem, TXT_BTN_CI, 15)
+		Btn(root, caixaBtn1, caixaImagem, TXT_BTN_ENVIAR, 15)
 
 		caixaImagem.pack()
 
@@ -210,9 +272,10 @@ if __name__ == '__main__':
 		caixaBtn2 = caixaBtn(root)
 		caixaBtn2.pack()
 
-		# Botões inferiores (opções, enviar, sair)
+		# Botões inferiores (editar, Dtecção, opções, sair)
+		Btn(root, caixaBtn2, caixaImagem, TXT_BTN_EDITAR, 15, MIDNIGHT_BLUE)
+		Btn(root, caixaBtn2, caixaImagem, TXT_BTN_DET, 15, MIDNIGHT_BLUE)
 		Btn(root, caixaBtn2, caixaImagem, TXT_BTN_OPC)
-		Btn(root, caixaBtn2, caixaImagem, TXT_BTN_ENVIAR) 
 		Btn(root, caixaBtn2, caixaImagem, TXT_BTN_SAIR)
 
 		# Container com o rodapé
