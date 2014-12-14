@@ -1,7 +1,7 @@
 RPC-para-processamento-de-imagens
 =================================
 
-Uma API que utilize a biblioteca OpenCV e oferece os seguintes métodos via RPC:
+Uma API que utiliza a biblioteca OpenCV e oferece os seguintes métodos via RPC:
 <ul>
   <li>Detecção de faces</li>
   <li>Redimensionamen</li>
