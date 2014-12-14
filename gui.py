@@ -11,7 +11,7 @@ POMEGRANATE_COLOR = '#c0392b';
 CLOUDS_COLOR = '#ecf0f1';
 
 # Textos da GUI
-TXT_TITULO = 'RPC para processamento de imagens'
+TXT_TITULO = '  RPC para processamento de imagens'
 TXT_BTN_CI = 'Carregar Imagem ...'
 TXT_BTN_ENVIAR = 'Enviar'
 TXT_BTN_OPC = 'Opcoes'
@@ -45,11 +45,13 @@ def center(root):
     root.geometry('{}x{}+{}+{}'.format(width, height, x, y))
 
 def addTitulo(root):
-	texto = Label(root, text=TXT_TITULO, font=('Helvetica','18','bold'),
+	foto = PhotoImage(file='Images-48.png')
+	texto = Label(root, image=foto, text=TXT_TITULO, compound=LEFT, font=('Helvetica','18','bold'),
 		borderwidth=2, highlightthickness=2)
+	texto.photo = foto
 	texto['foreground'] = CLOUDS_COLOR
 	texto['background'] = POMEGRANATE_COLOR
-	texto['width'] = 100
+	texto['width'] = 1000
 
 	return texto
 
@@ -108,14 +110,15 @@ class Btn:
 		if str(self.button['text']) == TXT_BTN_CI:
 			self.caminhoImg = askopenfilename(filetypes=TIPOS)
 
-			# Atualiza a variável que é responsável por armazenar a imagem que será enviada
-			global img
-			img = Image.open(self.caminhoImg)
-
 			try:
+				# Atualiza a variável que é responsável por armazenar a imagem que será enviada
+				global img
+				img = Image.open(self.caminhoImg)
+
 				# Atualizando a Imagem
 				foto = abrirImg(self.caminhoImg, 598, 378)
 				self.caixaImagem.configure(image=foto)
+
 				# Para manter a referência
 				self.caixaImagem.image = foto
 			except:
@@ -174,47 +177,49 @@ class Dialog:
 		# Destruindo a caixa de dialogo
 		self.top.destroy()
 
-try:
-	# Configuraçoes do root
-	root = Tk()
-	root.wm_title(TXT_TITULO)
-	root.geometry('800x640')
-	center(root)
-	root.resizable(0,0)
-	root.configure(background=CARROT_COLOR, bd=5, highlightthickness=2)
-	
-
-	# Container com o título
-	textoTitulo = addTitulo(root)
-	textoTitulo.pack()
-
-	# Container onde a imagem carregada ficará
-	caixaImagem = caixaImg(root, NO_IMG)
-
-	# Container com o primeiro grupo de botões
-	caixaBtn1 = caixaBtn(root)
-	caixaBtn1.pack()
-
-	# Botão de Carregar a imagem
-	Btn(root, caixaBtn1, caixaImagem, TXT_BTN_CI, 15)
-
-	caixaImagem.pack()
-
-	# Container com o segundo grupo de botões
-	caixaBtn2 = caixaBtn(root)
-	caixaBtn2.pack()
 
 
-	# Botões inferiores (opções, enviar, sair)
-	Btn(root, caixaBtn2, caixaImagem, TXT_BTN_OPC)
-	Btn(root, caixaBtn2, caixaImagem, TXT_BTN_ENVIAR) 
-	Btn(root, caixaBtn2, caixaImagem, TXT_BTN_SAIR)
+		
+if __name__ == '__main__':
+	try:
+		# Configuraçoes do root
+		root = Tk()
+		root.wm_title(TXT_TITULO)
+		root.geometry('800x650')
+		center(root)
+		root.resizable(0,0)
+		root.configure(background=CARROT_COLOR, bd=5, highlightthickness=2)
 
-	# Container com o rodapé
-	textoRodape = addRodape(root)
-	textoRodape.pack()
+		# Container com o título
+		textoTitulo = addTitulo(root)
+		textoTitulo.pack()
 
-	root.mainloop()
-except:
-	raise
-	#pass
+		# Container onde a imagem carregada ficará
+		caixaImagem = caixaImg(root, NO_IMG)
+
+		# Container com o primeiro grupo de botões
+		caixaBtn1 = caixaBtn(root)
+		caixaBtn1.pack()
+
+		# Botão de Carregar a imagem
+		Btn(root, caixaBtn1, caixaImagem, TXT_BTN_CI, 15)
+
+		caixaImagem.pack()
+
+		# Container com o segundo grupo de botões
+		caixaBtn2 = caixaBtn(root)
+		caixaBtn2.pack()
+
+		# Botões inferiores (opções, enviar, sair)
+		Btn(root, caixaBtn2, caixaImagem, TXT_BTN_OPC)
+		Btn(root, caixaBtn2, caixaImagem, TXT_BTN_ENVIAR) 
+		Btn(root, caixaBtn2, caixaImagem, TXT_BTN_SAIR)
+
+		# Container com o rodapé
+		textoRodape = addRodape(root)
+		textoRodape.pack()
+
+		root.mainloop()
+	except:
+		raise
+		#pass
