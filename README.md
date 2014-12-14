@@ -7,7 +7,7 @@ Uma API que utilize a biblioteca OpenCV e oferece os seguintes métodos via RPC:
   <li>Redimensionamen</li>
   <li>Filtro</li>
 </ul>
-
+Além de um cliente que realiza as consultas a API.
 <h4>Tecnologias Utilizadas</h4>
 <ul>
   <li>Python</li>
@@ -18,4 +18,4 @@ Uma API que utilize a biblioteca OpenCV e oferece os seguintes métodos via RPC:
 <h4>Screenshots</h4>
 <hr>
 ![Tela01](https://raw.github.com/GianCarlosB/RPC-para-processamento-de-imagens/master/Screenshots/Captura01.png)
-![Tela02](https://raw.github.com/GianCarlosB/RPC-para-processamento-de-imagens/master/screenshots/Captura02.png)
+![Tela02](https://raw.github.com/GianCarlosB/RPC-para-processamento-de-imagens/master/Screenshots/Captura02.png)
