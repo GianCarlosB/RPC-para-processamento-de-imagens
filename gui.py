@@ -1,21 +1,48 @@
 # coding: utf-8
+######################################## ----- GUI do cliente ----- ########################################
 
 from Tkinter import *
 from tkFileDialog import *
 from PIL import ImageTk, Image
 
+# Cores
 CARROT_COLOR = '#e67e22';
 POMEGRANATE_COLOR = '#c0392b';
 CLOUDS_COLOR = '#ecf0f1';
 
+# Textos da GUI
 TXT_TITULO = 'RPC para processamento de imagens'
-TXT_BTN_CI = 'Carregar Imagem'
+TXT_BTN_CI = 'Carregar Imagem ...'
 TXT_BTN_ENVIAR = 'Enviar'
+TXT_BTN_OPC = 'Opcoes'
 TXT_BTN_SAIR = 'Sair'
 
+# Nome da Imagem padrão
 NO_IMG = 'NoImage.jpg'
 
+############################ IMPORTANTE ############################
+# Variável para armazenar a imagem que será enviada para o servidor
+# Sem redimensionamentos
+img = Image.open(NO_IMG)
+
+# Variável para armazenar a url de resposta do servidor
+url = ''
+
+# Dados para fazer a conexão com o servidor
+ip = '127.0.0.1' # IP padrão
+porta = '6666' # porta padrão
+####################################################################
+
+# Tipos de arquivos que podem ser abertos
 TIPOS = [('Image Files', ('*.jpg', '*.gif', '*.png')), ('JPEG','*.jpg'), ('GIF','*.gif'), ('PNG','*.png')]
+
+def center(root):
+    root.update_idletasks()
+    width = root.winfo_width()
+    height = root.winfo_height()
+    x = (root.winfo_screenwidth() // 2) - (width // 2)
+    y = (root.winfo_screenheight() // 2) - (height // 2)
+    root.geometry('{}x{}+{}+{}'.format(width, height, x, y))
 
 def addTitulo(root):
 	texto = Label(root, text=TXT_TITULO, font=('Helvetica','18','bold'),
@@ -23,6 +50,15 @@ def addTitulo(root):
 	texto['foreground'] = CLOUDS_COLOR
 	texto['background'] = POMEGRANATE_COLOR
 	texto['width'] = 100
+
+	return texto
+
+def addRodape(root):
+	texto = Label(root, text='Copyright © 2014 - Todos os direitos reservados - Evandro Loschi / Gian Carlos', font=('Helvetica','10'),
+		borderwidth=2, highlightthickness=2, padx=20, pady=20)
+	texto['foreground'] = CLOUDS_COLOR
+	texto['background'] = POMEGRANATE_COLOR
+	texto['width'] = 150
 
 	return texto
 
@@ -63,14 +99,18 @@ class Btn:
 		self.button['background'] = POMEGRANATE_COLOR
 		self.button['width'] = largura
 		self.button.bind('<Button>', self.trata_eventos) 
-		self.button.pack(padx=12, pady=12)
+		self.button.pack(padx=6, pady=6)
 
 		# Caminho da imagem aberta
 		self.caminhoImg = ''
 
 	def trata_eventos(self, event):
-		if self.button['text'] == TXT_BTN_CI:
+		if str(self.button['text']) == TXT_BTN_CI:
 			self.caminhoImg = askopenfilename(filetypes=TIPOS)
+
+			# Atualiza a variável que é responsável por armazenar a imagem que será enviada
+			global img
+			img = Image.open(self.caminhoImg)
 
 			try:
 				# Atualizando a Imagem
@@ -81,21 +121,72 @@ class Btn:
 			except:
 				#raise
 				pass
+		elif self.button['text'] == TXT_BTN_ENVIAR:
+			####################################################
+			####################################################
+			####################################################
+			# ****** FAZER AQUI A CONEXÃO COMO SERVIDOR ****** #
+			####################################################
+			####################################################
+			####################################################
+			pass
+		elif self.button['text'] == TXT_BTN_OPC:
+			Dialog(self.root)
 		elif self.button['text'] == TXT_BTN_SAIR:
 			self.root.destroy()
         	self.root = None
+class Dialog:
+	def __init__(self, root):
+		# Configuraçoes da janela
+		self.top = Toplevel(root)
+		self.top.wm_title(TXT_BTN_OPC)
+		self.top.geometry('250x100')
+		center(self.top)
+		self.top.resizable(0,0)
+		self.top.configure(background=CARROT_COLOR, bd=5, highlightthickness=2)
+
+		# Labels
+		Label(self.top, text='IP: ', background=CARROT_COLOR,
+			foreground=CLOUDS_COLOR).grid(row=0)
+		Label(self.top, text='Porta: ', background=CARROT_COLOR,
+			foreground=CLOUDS_COLOR).grid(row=1)
+
+		# Inputs
+		self.entradaIp = Entry(self.top)
+		self.entradaIp.insert(0, ip)
+		self.entradaPorta = Entry(self.top)
+		self.entradaPorta.insert(0, porta)
+
+		self.entradaIp.grid(row=0, column=1, padx=2, pady=2)
+		self.entradaPorta.grid(row=1, column=1, padx=2, pady=2)
+
+		# Botão de OK
+		self.btn = Button(self.top, text='OK', background=POMEGRANATE_COLOR,
+			foreground=CLOUDS_COLOR,command=self.ok)
+		self.btn.grid(row=2, column=1, padx=4, pady=4)
+	def ok(self):
+		# Atualizando os parâmetros para comunicação com o servidor
+		global ip
+		global porta
+		ip = self.entradaIp.get()
+		porta = self.entradaPorta.get()
+
+		# Destruindo a caixa de dialogo
+		self.top.destroy()
 
 try:
 	# Configuraçoes do root
 	root = Tk()
 	root.wm_title(TXT_TITULO)
-	root.geometry('800x600')
+	root.geometry('800x640')
+	center(root)
 	root.resizable(0,0)
-	root.configure(background=CARROT_COLOR, bd=5)
+	root.configure(background=CARROT_COLOR, bd=5, highlightthickness=2)
+	
 
 	# Container com o título
-	texto = addTitulo(root)
-	texto.pack()
+	textoTitulo = addTitulo(root)
+	textoTitulo.pack()
 
 	# Container onde a imagem carregada ficará
 	caixaImagem = caixaImg(root, NO_IMG)
@@ -104,6 +195,7 @@ try:
 	caixaBtn1 = caixaBtn(root)
 	caixaBtn1.pack()
 
+	# Botão de Carregar a imagem
 	Btn(root, caixaBtn1, caixaImagem, TXT_BTN_CI, 15)
 
 	caixaImagem.pack()
@@ -112,8 +204,15 @@ try:
 	caixaBtn2 = caixaBtn(root)
 	caixaBtn2.pack()
 
+
+	# Botões inferiores (opções, enviar, sair)
+	Btn(root, caixaBtn2, caixaImagem, TXT_BTN_OPC)
 	Btn(root, caixaBtn2, caixaImagem, TXT_BTN_ENVIAR) 
 	Btn(root, caixaBtn2, caixaImagem, TXT_BTN_SAIR)
+
+	# Container com o rodapé
+	textoRodape = addRodape(root)
+	textoRodape.pack()
 
 	root.mainloop()
 except:
