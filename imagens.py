@@ -75,10 +75,30 @@ def apply_filter(image, filter):
             arr[:,::10] = 255
             return Image.fromarray(arr)
 
-        # Transforms an image to grayscale.
-        elif filter == 'DECOLORIZE':
-            aux = numpy.zeros(arr.shape, dtype=numpy.uint8)
-            aux[...,:] = arr>128
+        # Transform an image into grayscale.
+        elif filter == 'GRAYSCALE':
+            r, g, b = arr[:,:,0], arr[:,:,1], arr[:,:,2]
+            aux = 0.2989 * r + 0.5870 * g + 0.1140 * b
+            return Image.fromarray(aux.astype(numpy.uint8))
+
+        # Transforms an image to look more red.
+        elif filter == 'REDDENING':
+            arr[...,0] = 255
+            return Image.fromarray(arr)
+
+        # Transforms an image to look more green.
+        elif filter == 'GREENING':
+            arr[...,1] = 255
+            return Image.fromarray(arr)
+
+        # Transforms an image to look more blue.
+        elif filter == 'BLUENING':
+            arr[...,2] = 255
+            return Image.fromarray(arr)
+
+        # Inverts the colors (negative).
+        elif filter == 'NEGATIVE':
+            aux = 255 - arr
             return Image.fromarray(aux)
 
         # Crops the image trimming the edges that are only black.
@@ -95,9 +115,8 @@ def apply_filter(image, filter):
             aux = numpy.empty((H,W))
             # Makes a copy of the row and columns desired data.
             aux = arr[mmin : mmax + 1, nmin : nmax + 1]
-            return aux
+            return Image.fromarray(aux)
     except:
-        raise
         return None
 
 
@@ -124,11 +143,26 @@ if __name__=='__main__':
     print save_image(cp7, 'cp7.jpg')
 
     '''
-
+    '''
     cp8 = apply_filter(img, 'QUADRICULATE')
-    cp9 = apply_filter(img, 'DECOLORIZE')
+    cp9 = apply_filter(img, 'GRAYSCALE')    
     cp10 = apply_filter(img, 'CROP')
+    cp11 = apply_filter(img, 'NEGATIVE')
+
+    cp12 = apply_filter(img, 'GREENING')
+    cp13 = apply_filter(img, 'REDDENING')
+    cp14 = apply_filter(img, 'BLUENING')
+
+    cp15 = apply_filter(img, 'UP')
     
     print save_image(cp8, 'cp8.jpg')
     print save_image(cp9, 'cp9.jpg')
     print save_image(cp10, 'cp10.jpg')
+    print save_image(cp11, 'cp11.jpg')
+
+    print save_image(cp12, 'cp12.jpg')
+    print save_image(cp13, 'cp13.jpg')
+    print save_image(cp14, 'cp14.jpg')
+
+    print save_image(cp15, 'cp15.jpg')
+    '''
