@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
-import os
 from flask import Flask, request, redirect, url_for
+from imagens import *
 from time import time
 from werkzeug import secure_filename
 import hashlib
+import os
 
 UPLOAD_FOLDER = 'uploads'
+DOWNLOAD_FOLDER = 'downloads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-ALLOWED_FILTERS = ['blur','grayscale','rotate90','rotate180','rotate270']
+ALLOWED_FILTERS = ['QUADRICULATE','GRAYSCALE','CROP','NEGATIVE','GREENING','REDDENING','BLUENING','WIDTH','HEIGHT','ROTATE90','ROTATE180','ROTATE270']
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -58,23 +60,44 @@ def apply_effects():
              effects = [blur, grayscale]: The applied effects must be separated by commas. They will be applied in the
                 order in which they are informed.
     '''
-
+    print str(dict(request.args))
     try:
-        filename = request.args[file]
+        # Open the file.
+        filename = request.args['file']
+        img = load_image('%s/%s' % (UPLOAD_FOLDER, filename))
 
-        original_file = open(filename)
-        imagem = original_file.read()
-        original_file.close()
+        # Aply the efects.
+        if 'effects' in request.args:
+            effects = [_.upper() for _ in request.args['effects'].split(',')]
 
-        new_file_name = '%d_%s' % (int(time.time()), filename)
-        new_file = open(new_file_name, 'w')
-        new_file.write(imagem)
-        new_file.close()
+        print
+        print effects
+        print
+        # Applies the independent effects.
+        for e in effects:
+            try:
+                if e in ['QUADRICULATE','GRAYSCALE','CROP','NEGATIVE','GREENING','REDDENING','BLUENING']:
+                    img = apply_filter(img, e) or img
+
+                elif e in ['ROTATE90','ROTATE180','ROTATE270']:
+                    img = rotate_image(img, int(e[6:])) or img
+            except:
+                pass
+
+        # Applies the intertwined effects.
+        try:
+            width = int(request.args['width']) if 'width' in request.args else None
+            height = int(request.args['height']) if 'height' in request.args else None
+            resize_image(img, width=width, height=height)
+        except:
+            pass
+
+        new_file_name = '%s/%s' % (DOWNLOAD_FOLDER, filename)
+        save_image(img, new_file_name)
 
         return new_file_name
 
     except Exception as e:
-        raise e
         return 'Processing failed.', 500
 
 @app.route('/upload_form', methods=['GET'])
