@@ -1,19 +1,70 @@
 # -*- coding: utf-8 -*-
 from flask import Flask, request, redirect, url_for
-from imagens import *
+from images import *
 from time import time
 from werkzeug import secure_filename
 import hashlib
 import os
+import cv2
+import Image
+import numpy
 
 UPLOAD_FOLDER = 'uploads'
 DOWNLOAD_FOLDER = 'downloads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-ALLOWED_FILTERS = ['QUADRICULATE','GRAYSCALE','CROP','NEGATIVE','GREENING','REDDENING','BLUENING','WIDTH','HEIGHT','ROTATE90','ROTATE180','ROTATE270']
+ALLOWED_FILTERS = ['FACE','QUADRICULATE','GRAYSCALE','CROP','NEGATIVE','GREENING','REDDENING','BLUENING','WIDTH','HEIGHT','ROTATE90','ROTATE180','ROTATE270']
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=DOWNLOAD_FOLDER)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.debug = True
+
+# Default path for Haar Cascade
+CASC_PATH = 'haarcascade_frontalface_default.xml'
+
+# Execute a recognition of faces and returne the coordinates of the faces.
+def recognize(imagePath, cascPath = CASC_PATH, sf = 1.1, mn = 5, ms = (30, 30), f = cv2.cv.CV_HAAR_SCALE_IMAGE):
+    # Create the haar cascade
+    faceCascade = cv2.CascadeClassifier(cascPath)
+
+    # Read the image
+    image = cv2.imread(imagePath)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Detect the faces
+    faces = faceCascade.detectMultiScale( gray, scaleFactor=sf, minNeighbors=mn, minSize=ms, flags=f )
+
+    # Return the list
+    return faces
+
+def see_faces(image, coordinates, mode=None):
+    try:
+        # Reads the image as array.
+        img = numpy.array(Image.open(image))
+
+        # Demarcates the faces found.
+        for c in coordinates:
+            # Filling the face area.
+            if mode=='fill':
+                # Red layer.
+                img[c[1]:c[1]+c[2], c[0]:c[0]+c[2], 0] = 255
+            # Drawing a rectangle.
+            else:
+                # Red layer.
+                img[c[1]:c[1]+5, c[0]:c[0]+c[2], 0] = 255
+                img[c[1]+c[2]:c[1]+c[2]+5, c[0]:c[0]+c[2], 0] = 255
+                img[c[1]:c[1]+c[2], c[0]:c[0]+5, 0] = 255
+                img[c[1]:c[1]+c[2], c[0]+c[2]:c[0]+c[2]+5, 0] = 255
+
+                # Green and blue layer.
+                img[c[1]:c[1]+5, c[0]:c[0]+c[2], 1:] = 0
+                img[c[1]+c[2]:c[1]+c[2]+5, c[0]:c[0]+c[2], 1:] = 0
+                img[c[1]:c[1]+c[2], c[0]:c[0]+5, 1:] = 0
+                img[c[1]:c[1]+c[2], c[0]+c[2]:c[0]+c[2]+5, 1:] = 0
+
+        # Returns the image obtained.
+        return Image.fromarray(img)
+    except:
+        return None
 
 def allowed_file(filename):
     '''
@@ -64,15 +115,16 @@ def apply_effects():
     try:
         # Open the file.
         filename = request.args['file']
-        img = load_image('%s/%s' % (UPLOAD_FOLDER, filename))
+        fullfilename = '%s/%s' % (UPLOAD_FOLDER, filename)
+        img = load_image(fullfilename)
+
 
         # Aply the efects.
         if 'effects' in request.args:
             effects = [_.upper() for _ in request.args['effects'].split(',')]
+        else:
+            effects = []
 
-        print
-        print effects
-        print
         # Applies the independent effects.
         for e in effects:
             try:
@@ -81,15 +133,21 @@ def apply_effects():
 
                 elif e in ['ROTATE90','ROTATE180','ROTATE270']:
                     img = rotate_image(img, int(e[6:])) or img
+                elif e == 'FACES':
+                    img = see_faces(fullfilename, recognize(fullfilename))
+                elif e == 'FILLFACES':
+                    img = see_faces(fullfilename, recognize(fullfilename), 'fill')
             except:
                 pass
 
         # Applies the intertwined effects.
         try:
-            width = int(request.args['width']) if 'width' in request.args else None
-            height = int(request.args['height']) if 'height' in request.args else None
-            resize_image(img, width=width, height=height)
+            if 'width' in request.args and 'height' in request.args:
+                width = int(request.args['width'])
+                height = int(request.args['height'])
+                resize_image(img, width=width, height=height)
         except:
+            raise
             pass
 
         new_file_name = '%s/%s' % (DOWNLOAD_FOLDER, filename)
@@ -98,6 +156,7 @@ def apply_effects():
         return new_file_name
 
     except Exception as e:
+        raise
         return 'Processing failed.', 500
 
 @app.route('/upload_form', methods=['GET'])
@@ -113,4 +172,4 @@ def upload_form():
     '''
 
 if __name__ == "__main__":
-    app.run(port=9999)
+    app.run(host= '0.0.0.0', port=9999)
