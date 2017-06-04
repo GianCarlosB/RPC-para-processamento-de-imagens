@@ -17,5 +17,5 @@ Além de um cliente que realiza as consultas a API.
 <hr>
 <h4>Screenshots</h4>
 <hr>
-![Tela01](https://raw.github.com/GianCarlosB/RPC-para-processamento-de-imagens/master/Screenshots/Captura01.png)
-![Tela02](https://raw.github.com/GianCarlosB/RPC-para-processamento-de-imagens/master/Screenshots/Captura02.png)
+<img src="https://raw.github.com/GianCarlosB/RPC-para-processamento-de-imagens/master/Screenshots/Captura01.png" alt="tela01"/>
+<img src="https://raw.github.com/GianCarlosB/RPC-para-processamento-de-imagens/master/Screenshots/Captura02.png" alt="tela02"/>
